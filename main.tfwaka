@@ -1,0 +1,42 @@
+ #Create s3 bucket
+ 44 resource "aws_s3_bucket" "mys3bucket" {
+ 45   bucket = "jwebapp"
+ 46
+ 47   tags = {
+ 48     Name        = "jesse bucket"
+ 49     Environment = "Dev"
+ 50   }
+ 51 }
+ 52
+ 53 resource "aws_s3_bucket_acl" "exampleacl" {
+ 54   bucket = aws_s3_bucket.mys3bucket.id
+ 55   acl    = "public"
+ 56 }
+ 57
+ 58 #Create a dynamodb table
+ 59 module "dynamodb_table" {
+ 60   source   = "terraform-aws-modules/dynamodb-table/aws"
+ 61
+ 62   name     = "terratable"
+ 63   hash_key = "id"
+ 64
+ 65   attributes = [
+ 66     {
+ 67       name = "id"
+ 68       type = "N"
+ 69     }
+ 70   ]
+ 71
+ 72   tags = {
+ 73     Terraform   = "true"
+ 74     Environment = "Dev"
+ 75   }
+ 76 }
+ 77
+ 78 #Create terraform backend
+ 79 terraform {
+    backend "s3" {
+      bucket = "jwebapp"
+      key = ""jwebapp/folder1/terraform.tfstate"
+      region = "us-east-2"
+      dynamodb_table = "terratable"
